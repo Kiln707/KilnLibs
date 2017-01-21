@@ -20,9 +20,9 @@
 
 void printBytes(const byte *bytes, const int length) {
 	for (int i = 0; i < length; ++i) {
-		if (i != 0 && i % 8 == 0) { std::cout << " "; }
-		if (i != 0 && i % 16 == 0) { std::cout << "\n"; }
-		printf("%x ", bytes[i]);
+		if (i != 0 && i % 8 == 0) { std::cout << " "; }	//This ensures that after the first 8 bytes there is a space for easier readability
+		if (i != 0 && i % 16 == 0) { std::cout << "\n"; } //This will add a new line to prevent the line getting longer than the console.
+		printf("0x%1X ", bytes[i]);	//Print the bytes out.
 	}
 	std::cout << "" << std::endl;
 }

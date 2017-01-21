@@ -13,6 +13,9 @@
 *******************************************************/
 #pragma once
 
+#ifndef SERIALIZATION_HEADERS_BINARYIO_H_
+#define SERIALIZATION_HEADERS_BINARYIO_H_
+
 typedef unsigned char byte;	//Set this 'Data Type' to prevent confusion
 
 /*****************************************************
@@ -92,3 +95,5 @@ char readChar(byte *src, const int pointer);
 short readShort(byte *src, const int pointer);
 int readInt(byte *src, const int pointer);
 long long readLong(byte *src, const int pointer);
+
+#endif /* SERIALIZATION_HEADERS_BINARYIO_H_ */
