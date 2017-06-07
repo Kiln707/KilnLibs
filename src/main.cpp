@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdio>
-#include "serialization/headers/BinaryIO.h"
+#include "serialization/headers/StringIO.h"
 #include <climits>
 
 int main(int argc, char *argv[])
@@ -13,14 +13,17 @@ int main(int argc, char *argv[])
 	char c = 'F';
 	bool yo = false;
 
-	writeBytes(bytes, 0, l);
+	//writeBytes(bytes, 0, l);
 	//serialize(bytes, 2, sch);
+
+
+
 	std::cout << l << std::endl;
 
-	printBytes(bytes, 30);
+	//printBytes(bytes, 30);
 	//printf("%x %x %x %x %x %x %x %x\n", bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]);
 
-	long long yoyo = readUnsignedLong(bytes, 0);
+	long long yoyo = readFromString("4283");
 	std::cout << yoyo << std::endl;
 
 	std::cin.get();

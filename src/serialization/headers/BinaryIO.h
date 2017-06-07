@@ -13,9 +13,6 @@
 *******************************************************/
 #pragma once
 
-#ifndef SERIALIZATION_HEADERS_BINARYIO_H_
-#define SERIALIZATION_HEADERS_BINARYIO_H_
-
 typedef unsigned char byte;	//Set this 'Data Type' to prevent confusion
 
 /*****************************************************
@@ -70,7 +67,17 @@ int writeBytes(byte *dest, const int pointer, const short data);
 int writeBytes(byte *dest, const int pointer, const int data);
 int writeBytes(byte *dest, const int pointer, const long long data);
 
-
+/*
+std::string convertToString(const unsigned char data);
+std::string convertToString(const unsigned short data);
+std::string convertToString(const unsigned int data);
+std::string convertToString(const unsigned long long data);
+std::string convertToString(const bool data);
+std::string convertToString(const char data);
+std::string convertToString(const short data);
+std::string convertToString(const int data);
+std::string convertToString(const long long data);
+*/
 
 /*****************************************************************
 * Read<INSERTDATATYPE>
@@ -95,5 +102,3 @@ char readChar(byte *src, const int pointer);
 short readShort(byte *src, const int pointer);
 int readInt(byte *src, const int pointer);
 long long readLong(byte *src, const int pointer);
-
-#endif /* SERIALIZATION_HEADERS_BINARYIO_H_ */
