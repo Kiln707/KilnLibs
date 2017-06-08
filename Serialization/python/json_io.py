@@ -1,7 +1,6 @@
 from tag import Tag
 import json
 import stringParser
-import re
 
 TAGTYPE = 'DATATYPE'
 VALUES = 'VALUES'
