@@ -1,6 +1,5 @@
 from tag import Tag
 import json_io
-import json
 
 ###############
 #Test Values:
@@ -39,6 +38,7 @@ tag.addData('set',st)
 tag.addData('frozenset',fst)
 tag.addData('tuple',tup)
 tag.addData('list',lst)
+tag.addData('breaking?', "[date time] [Info] This line should not be broken up")
 
 ## Testing Subtag Function
 sub = tag.addSubTag('subtag')

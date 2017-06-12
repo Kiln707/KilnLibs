@@ -1,6 +1,5 @@
 from tag import Tag
-import json
-import stringParser
+from stringParser import *
 
 TAGTYPE = 'DATATYPE'
 VALUES = 'VALUES'
@@ -58,7 +57,8 @@ def __formatJSON(JSONSTRING):
 	fJSON = ''
 	tabs = 0
 	running = True
-	for i,x in enumerate(JSONSTRING):
+	i = 0
+	while i < len(JSONSTRING):
 		char = JSONSTRING[i]
 		if char is '{':
 			fJSON += char
@@ -81,8 +81,13 @@ def __formatJSON(JSONSTRING):
 		elif char is ',':
 			fJSON += char+'\n'
 			fJSON = insertTabs(fJSON, tabs)
+		elif char is '"':
+			nextpos = charPos('"', JSONSTRING, i+1)
+			fJSON += substring(JSONSTRING, i, nextpos+1)
+			i = nextpos
 		else:
 			fJSON += char
+		i += 1
 		
 	return fJSON
 	
@@ -102,12 +107,12 @@ def decodeJSON(JSON):
                         continue
                 elif char is '"':
                         if dataName is None:
-                                nextpos = stringParser.charPos('"', JSON, i+1)
-                                dataName = stringParser.substring(JSON, i+1, nextpos)
+                                nextpos = charPos('"', JSON, i+1)
+                                dataName = substring(JSON, i+1, nextpos)
                                 i = nextpos
                         else:
-                                nextpos = stringParser.charPos('"', JSON, i+1)
-                                tag.addData(dataName, parseData(stringParser.substring(JSON, i+1, nextpos)))
+                                nextpos = charPos('"', JSON, i+1)
+                                tag.addData(dataName, parseData(substring(JSON, i+1, nextpos)))
                                 i=nextpos
                                 dataName = None
                 elif char is '[':
@@ -151,12 +156,12 @@ def parseTag(JSON, index):
                 elif c is '}':
                         count -= 1
                 i += 1
-        return stringParser.substring(JSON, index, i),i
+        return substring(JSON, index, i),i
 
 def parseList(JSON, index):
         lst = []
         skip=0
-        nextpos = stringParser.charPos(']', JSON, index)
+        nextpos = charPos(']', JSON, index)
         i = index
         while i < nextpos:
                 c=JSON[i]
@@ -166,28 +171,28 @@ def parseList(JSON, index):
                 if c == ']':
                         break
                 if c not in (' ',',','\n','\t','"',"'"):
-                        a = stringParser.charPos(',', JSON, i)
-                        b = stringParser.charPos('\n', JSON, i)
+                        a = charPos(',', JSON, i)
+                        b = charPos('\n', JSON, i)
                         if a < b and a is not -1 or b is -1:
                                 skip = a
                         else:
                                 skip = b
-                        lst.append(parseData(stringParser.substring(JSON, i, skip)))
+                        lst.append(parseData(substring(JSON, i, skip)))
                         i = skip
                 elif c in ('"',):
-                        skip = stringParser.charPos('"', JSON, i)
-                        lst.append(parseData(stringParser.substring(JSON, i, skip)))
+                        skip = charPos('"', JSON, i)
+                        lst.append(parseData(substring(JSON, i, skip)))
                         i=skip
                 elif c in ("'",):
-                        skip = stringParser.charPos("'", JSON, i)
-                        lst.append(parseData(stringParser.substring(JSON, i, skip)))
+                        skip = charPos("'", JSON, i)
+                        lst.append(parseData(substring(JSON, i, skip)))
                         i=skip
                 else:
                         i+=1
         return (lst,i)
 
 def parseData(s):
-        if stringParser.isNumeric(s):
-                return stringParser.toNumeric(s)
+        if isNumeric(s):
+                return toNumeric(s)
         else:
                 return s
