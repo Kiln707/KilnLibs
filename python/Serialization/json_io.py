@@ -1,4 +1,4 @@
-from tag import Tag
+from .tag import Tag
 
 TAGTYPE = 'DATATYPE'
 VALUES = 'VALUES'

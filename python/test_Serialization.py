@@ -1,5 +1,5 @@
-from tag import Tag
-import json_io
+from Serialization import Tag
+from Serialization import json_io
 
 ###############
 #Test Values:
