@@ -1,16 +1,15 @@
 from tag import Tag
-from stringParser import *
 
 TAGTYPE = 'DATATYPE'
 VALUES = 'VALUES'
 
 def encodeJSON(tag):
         if isinstance(tag, Tag):
-                return __formatJSON(toJSONString(tag))
+                return toJSONString(tag, True)
         else:
                 return __formatJSON(tag)
-	
-def toJSONString(tag):
+
+def toJSONString(tag, format=False):
 	if not isinstance(tag, Tag):
 		raise ValueError("tag must be an instance of Tag")
 	keys = tag.getKeys()
@@ -48,11 +47,13 @@ def toJSONString(tag):
                         JSONSTRING += '"'+str(key)+'": "'+str(data)+'"'
                 if i is not len(keys)-1:
                         JSONSTRING += ','
-		
-	
+
+
 	JSONSTRING += '}'
+	if format:
+		return __formatJSON(JSONSTRING)
 	return JSONSTRING
-	
+
 def __formatJSON(JSONSTRING):
 	fJSON = ''
 	tabs = 0
@@ -82,15 +83,15 @@ def __formatJSON(JSONSTRING):
 			fJSON += char+'\n'
 			fJSON = insertTabs(fJSON, tabs)
 		elif char is '"':
-			nextpos = charPos('"', JSONSTRING, i+1)
-			fJSON += substring(JSONSTRING, i, nextpos+1)
+			nextpos = __charPos('"', JSONSTRING, i+1)
+			fJSON += __substring(JSONSTRING, i, nextpos+1)
 			i = nextpos
 		else:
 			fJSON += char
 		i += 1
-		
+
 	return fJSON
-	
+
 def insertTabs(STRING, tabnum):
 	for i in range(0, tabnum):
 		STRING += '    '
@@ -107,12 +108,12 @@ def decodeJSON(JSON):
                         continue
                 elif char is '"':
                         if dataName is None:
-                                nextpos = charPos('"', JSON, i+1)
-                                dataName = substring(JSON, i+1, nextpos)
+                                nextpos = __charPos('"', JSON, i+1)
+                                dataName = __substring(JSON, i+1, nextpos)
                                 i = nextpos
                         else:
-                                nextpos = charPos('"', JSON, i+1)
-                                tag.addData(dataName, parseData(substring(JSON, i+1, nextpos)))
+                                nextpos = __charPos('"', JSON, i+1)
+                                tag.addData(dataName, parseData(__substring(JSON, i+1, nextpos)))
                                 i=nextpos
                                 dataName = None
                 elif char is '[':
@@ -156,12 +157,12 @@ def parseTag(JSON, index):
                 elif c is '}':
                         count -= 1
                 i += 1
-        return substring(JSON, index, i),i
+        return __substring(JSON, index, i),i
 
 def parseList(JSON, index):
         lst = []
         skip=0
-        nextpos = charPos(']', JSON, index)
+        nextpos = __charPos(']', JSON, index)
         i = index
         while i < nextpos:
                 c=JSON[i]
@@ -171,28 +172,79 @@ def parseList(JSON, index):
                 if c == ']':
                         break
                 if c not in (' ',',','\n','\t','"',"'"):
-                        a = charPos(',', JSON, i)
-                        b = charPos('\n', JSON, i)
+                        a = __charPos(',', JSON, i)
+                        b = __charPos('\n', JSON, i)
                         if a < b and a is not -1 or b is -1:
                                 skip = a
                         else:
                                 skip = b
-                        lst.append(parseData(substring(JSON, i, skip)))
+                        lst.append(parseData(__substring(JSON, i, skip)))
                         i = skip
                 elif c in ('"',):
-                        skip = charPos('"', JSON, i)
-                        lst.append(parseData(substring(JSON, i, skip)))
+                        skip = __charPos('"', JSON, i)
+                        lst.append(parseData(__substring(JSON, i, skip)))
                         i=skip
                 elif c in ("'",):
-                        skip = charPos("'", JSON, i)
-                        lst.append(parseData(substring(JSON, i, skip)))
+                        skip = __charPos("'", JSON, i)
+                        lst.append(parseData(__substring(JSON, i, skip)))
                         i=skip
                 else:
                         i+=1
         return (lst,i)
 
 def parseData(s):
-        if isNumeric(s):
-                return toNumeric(s)
+        if __isNumeric(s):
+                return __toNumeric(s)
         else:
                 return s
+####################################################################
+# String helper section
+###################################################################
+#Find the next instance of character
+def __charPos(char, string, pos=0):
+        for i in range(pos+1, len(string)):
+                if string[i] is char:
+                        return i
+        return -1
+
+def __substring(string, startpos=0, endpos=None):
+        if endpos is None:
+                endpos = len(string)
+        return string[startpos : endpos]
+
+def __toNumeric(s, noError=False):
+        if not isinstance(s, str) or not __isNumeric(s):
+                if noError:
+                        return None
+                else:
+                       raise ValueError("Passed value is not a String or is not Numeric")
+        if __isInteger(s):
+                return int(s)
+        elif __isFloat(s):
+                return float(s)
+        elif __isComplex(s):
+                return complex(s)
+
+def __isNumeric(s):
+        return __isInteger(s) or __isFloat(s) or __isComplex(s)
+
+def __isInteger(s):
+        try:
+                int(s)
+                return True
+        except ValueError:
+                return False
+
+def __isFloat(s):
+        try:
+                float(s)
+                return True
+        except ValueError:
+                return False
+
+def __isComplex(s):
+        try:
+                complex(s)
+                return True
+        except ValueError:
+                return False

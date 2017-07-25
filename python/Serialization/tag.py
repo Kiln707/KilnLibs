@@ -23,7 +23,7 @@ class Tag:
 
     def getData(self, tag_name):
         return self.dict[tag_name]
-    
+
     def removeData(self, tag_name):
         if self.keyExists(tag_name):
             del(self.dict[tag_name])
@@ -35,11 +35,3 @@ class Tag:
         if key in self.dict:
             return True
         return False
-
-    def print(self):
-        for k in self.getKeys():
-            if isinstance(self.dict[k], Tag):
-                print('Sub tag:',k)
-                self.dict[k].print()
-            else:
-                print(k,':', self.dict[k])

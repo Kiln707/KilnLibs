@@ -100,9 +100,5 @@ print("\nTag to Formatted JSON:\n",JSON ,"\n\n")
 #From JSON
 a = json_io.decodeJSON(JSON)
 
-#Print Tag Contents
-print('Tag Contents:\n')
-a.print()
 
 print(json_io.encodeJSON(a))# == JSON)
-
