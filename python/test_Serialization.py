@@ -1,5 +1,16 @@
-from Serialization import Tag
-from Serialization import json_io
+from Serialization import SerializationTag
+#from Serialization import json_io
+
+def printTagData(tag):
+    assert isinstance(tag, SerializationTag), "Tag needs to be of instance SerializationTag"
+    print(tag.getKeys())
+    for key in tag.getKeys():
+        data = tag.getData(key)
+        print(key+": "+str(data))
+        if isinstance(data, SerializationTag):
+            print("--------------START TAG-------------------")
+            printTagData(data)
+            print("---------------END TAG--------------------")
 
 ###############
 #Test Values:
@@ -24,7 +35,7 @@ print(set(list(st)))
 ###############
 # Tag Test
 ###############
-tag = Tag()
+tag = SerializationTag()
 tag.addData('bool1', bool1)
 tag.addData('bool2', bool2)
 tag.addData('byte', byte)
@@ -41,7 +52,9 @@ tag.addData('list',lst)
 tag.addData('breaking?', "[date time] [Info] This line should not be broken up")
 
 ## Testing Subtag Function
-sub = tag.addSubTag('subtag')
+#Depreciated
+#sub = tag.addSubTag('subtag')
+sub = SerializationTag()
 
 sub.addData('bool1', bool1)
 sub.addData('bool2', bool2)
@@ -59,46 +72,50 @@ sub.addData('list',lst)
 
 #Testing remove data
 sub.removeData('bool1')
+tag.addData('sub1', sub)
 
 ######################
 # Testing adding a tag
 #######################
-sub2 = Tag()
+sub2 = SerializationTag(sub)
 
-sub2.addData('bool1', bool1)
-sub2.addData('bool2', bool2)
-sub2.addData('byte', byte)
-sub2.addData('char', char)
-sub2.addData('comp',comp)
-sub2.addData('float',flt)
-sub2.addData('integer',integer)
-sub2.addData('string',string)
-sub2.addData('dictionary',dic)
-sub2.addData('set',st)
-sub2.addData('frozenset',fst)
-sub2.addData('tuple',tup)
-sub2.addData('list',lst)
+sub2.addData('xbool1', bool1)
+sub2.addData('xbool2', bool2)
+sub2.addData('xbyte', byte)
+sub2.addData('xchar', char)
+sub2.addData('xcomp',comp)
+sub2.addData('xfloat',flt)
+sub2.addData('xinteger',integer)
+sub2.addData('xstring',string)
+sub2.addData('xdictionary',dic)
+sub2.addData('xset',st)
+sub2.addData('xfrozenset',fst)
+sub2.addData('xtuple',tup)
+sub2.addData('xlist',lst)
 
 tag.addData('tag2', sub2)
 sub.addData('t2',sub2) #Modified after adding to tag
 
 
 #################################
-# Tag / JSON Conversions
+# Testing SerializationTag
 #################################
+printTagData(tag)
 
-#To JSON
-JSON = json_io.toJSONString(tag) #To JSON String
-print('\nTag to JSON String:\n',JSON ,"\n\n")
+bool1 = True
+bool2 = False
+byte = bytes(35)
+char = chr(65)
+comp = complex(976418)
+flt = 354.264
+integer = int(689)
+string = "This is a value"
+dic = {'Yoho': "A bottle of rum", "sumval": 45}
+st = {1,2,3,4,5}
+fst = frozenset(st)
+tup = (1,2,3,4,5)
+lst = [1,2,3,4,5,6,7,8,9,0]
 
-JSON = json_io.encodeJSON(JSON) #JSON String to Formatted JSON
-print("\nJSON String to Formatted JSON:\n",JSON ,"\n\n")
-
-JSON = json_io.encodeJSON(tag) #Tag to Formatted JSON
-print("\nTag to Formatted JSON:\n",JSON ,"\n\n")
-
-#From JSON
-a = json_io.decodeJSON(JSON)
-
-
-print(json_io.encodeJSON(a))# == JSON)
+bool1test = tag.getBool('bool1')
+bool2test = tag.getBool('bool2')
+bytetest = tag.getBytes('byte')

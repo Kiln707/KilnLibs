@@ -1,2 +1,1 @@
-__all__=["tag", "json_io"]
-from .tag import Tag
+from .serializationTag import SerializationTag
