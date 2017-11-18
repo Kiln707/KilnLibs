@@ -11,7 +11,7 @@ class SerializationTag:
         if tag is None: #Creating a new instance of SerializationTag
             self.dict = {}
         else:   #Creating a copy of SerializationTag
-            self.dict = tag.__getDict()
+            self.dict = tag.getDict()
 
     '''
     NOT REALLY NEEDED. Keeping commented out for now.
@@ -29,15 +29,18 @@ class SerializationTag:
         allowedValues = (bool, bytes, chr, complex, float, int, str, dict, frozenset, set, tuple, list, SerializationTag)
         assert type(value) in allowedValues, SerializationTag.error[2]
         assert not self.keyExists(key), SerializationTag.error[0]+key
-        self.dict[key] = value
+        if isinstance(value, bytes):
+            self.dict[key] = value.decode('utf-8')
+        else:
+            self.dict[key] = value
         return value
 
     '''
     getData, the main idea. Replaced with methods that should be used. getbool, etc.
-    '''
     def getData(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
         return self.dict[key]
+    '''
 
     def getBool(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -46,8 +49,7 @@ class SerializationTag:
 
     def getBytes(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is bytes, SerializationTag.error[4]
-        return bytes(self.dict[key])
+        return self.dict[key].encode('utf-8')
 
     def getChr(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -142,5 +144,5 @@ class SerializationTag:
     ' Get the dictionary of the tag, used to make a copy of Tag
     ' Should not be used normally
     '''
-    def __getDict(self):
+    def getDict(self):
         return dict(self.dict) #Return a copy of the dictionary

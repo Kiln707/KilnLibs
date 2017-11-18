@@ -1,15 +1,14 @@
 from Serialization import SerializationTag
-#from Serialization import json_io
+from Serialization import json_io
 
 def printTagData(tag):
     assert isinstance(tag, SerializationTag), "Tag needs to be of instance SerializationTag"
     print(tag.getKeys())
-    for key in tag.getKeys():
-        data = tag.getData(key)
-        print(key+": "+str(data))
-        if isinstance(data, SerializationTag):
+    for key, val in tag.getDict().items():
+        print(key+": "+str(val))
+        if isinstance(val, SerializationTag):
             print("--------------START TAG-------------------")
-            printTagData(data)
+            printTagData(val)
             print("---------------END TAG--------------------")
 
 ###############
@@ -119,3 +118,5 @@ lst = [1,2,3,4,5,6,7,8,9,0]
 bool1test = tag.getBool('bool1')
 bool2test = tag.getBool('bool2')
 bytetest = tag.getBytes('byte')
+
+print(json_io.encodeJSON(tag))
