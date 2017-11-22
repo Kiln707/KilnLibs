@@ -31,9 +31,15 @@ class SerializationTag:
         assert not self.keyExists(key), SerializationTag.error[0]+key
         if isinstance(value, bytes):
             self.dict[key] = value.decode('utf-8')
+        elif isinstance(value, complex):
+            self.dict[key] = SerializationTag().addData("dataType", "complex").addData("real", int(value.real)).addData("imag", int(value.imag))
+        elif isinstance(value, set):
+            self.dict[key] = SerializationTag().addData("dataType", "set").addData("data", list(value))
+        elif isinstance(value, frozenset):
+            self.dict[key] = SerializationTag().addData("dataType", "frozenset").addData("data", list(value))
         else:
             self.dict[key] = value
-        return value
+        return self
 
     '''
     getData, the main idea. Replaced with methods that should be used. getbool, etc.
@@ -58,8 +64,9 @@ class SerializationTag:
 
     def getComplex(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is complex, SerializationTag.error[4]
-        return complex(self.dict[key])
+        assert type(self.dict[key]) is serializationTag, SerializationTag.error[4]
+        assert self.dict[key].keyExists("dataType") and self.dict[key].keyExists("real") and self.dict[key].keyExists("imag"), SerializationTag.error[4]
+        return complex(int(self.dict[key].getInt("real")), int(self.dict[key].getInt("imag")))
 
     def getFloat(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -83,13 +90,15 @@ class SerializationTag:
 
     def getFrozenset(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is frozenset, SerializationTag.error[4]
-        return frozenset(self.dict[key])
+        assert type(self.dict[key]) is serializationTag, SerializationTag.error[4]
+        assert self.dict[key].keyExists("dataType") and self.dict[key].keyExists("data"), SerializationTag.error[4]
+        return frozenset(self.dict[key].getData("data"))
 
     def getSet(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is set, SerializationTag.error[4]
-        return set(self.dict[key])
+        assert type(self.dict[key]) is serializationTag, SerializationTag.error[4]
+        assert self.dict[key].keyExists("dataType") and self.dict[key].keyExists("data"), SerializationTag.error[4]
+        return set(self.dict[key].getData("data"))
 
     def getTuple(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
