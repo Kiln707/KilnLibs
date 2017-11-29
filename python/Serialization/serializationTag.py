@@ -7,19 +7,15 @@ class SerializationTag:
     )
     #Constructor for new SerializationTag serialization
     def __init__(self,tag=None):
-        assert isinstance(tag, SerializationTag) or tag is None, SerializationTag.error[1]
+        assert isinstance(tag, SerializationTag) or type(tag) is dict or tag is None, SerializationTag.error[1]
         if tag is None: #Creating a new instance of SerializationTag
-            self.dict = {}
+            self.dict = {'DATATYPE':'SerializationTag'}
+        elif type(tag) is dict:
+            if not ( 'DATATYPE' in tag ):
+                tag['DATATYPE'] = 'SERIALIZATIONTAG'
+            self.dict = dict(tag)
         else:   #Creating a copy of SerializationTag
             self.dict = tag.getDict()
-
-    '''
-    NOT REALLY NEEDED. Keeping commented out for now.
-    def createSubSerializationTag(self, tag_name):
-        assert not self.keyExists(tag_name), SerializationTag.error[0]+tag_name
-        self.dict[tag_name] = SerializationTag()
-        return self.dict[tag_name]
-    '''
 
     '''
     'Insert data with key
@@ -29,8 +25,19 @@ class SerializationTag:
         allowedValues = (bool, bytes, chr, complex, float, int, str, dict, frozenset, set, tuple, list, SerializationTag)
         assert type(value) in allowedValues, SerializationTag.error[2]
         assert not self.keyExists(key), SerializationTag.error[0]+key
-        if isinstance(value, bytes):
+        if type(value) is bytes:
             self.dict[key] = value.decode('utf-8')
+        elif type(value) is dict and 'DATATYPE' in value:
+                self.dict[key] = SerializationTag(value)
+        elif type(value) is complex:
+            t = {'DATATYPE':'COMPLEX', 'REAL':value.real, 'IMAG':value.imag}
+            self.dict[key] = SerializationTag(t)
+        elif type(value) is set:
+            t = {'DATATYPE':'SET', 'VALUES':list(value)}
+            self.dict[key] = SerializationTag(t)
+        elif type(value) is frozenset:
+            t = {'DATATYPE':'FROZENSET', 'VALUES':list(value)}
+            self.dict[key] = SerializationTag(t)
         else:
             self.dict[key] = value
         return value
@@ -58,8 +65,9 @@ class SerializationTag:
 
     def getComplex(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is complex, SerializationTag.error[4]
-        return complex(self.dict[key])
+        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
+        assert self.dict[key].keyExists['DATATYPE'] and self.dict[key].getData['DATATYPE'] == 'COMPLEX', SerializationTag.error[4]
+        return complex(self.dict[key].getData['REAL'],self.dict[key].getData['IMAG'])
 
     def getFloat(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -83,13 +91,15 @@ class SerializationTag:
 
     def getFrozenset(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is frozenset, SerializationTag.error[4]
-        return frozenset(self.dict[key])
+        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
+        assert self.dict[key].keyExists['DATATYPE'] and self.dict[key].getData['DATATYPE'] == 'FROZENSET', SerializationTag.error[4]
+        return frozenset(self.dict[key].getData['VALUES'])
 
     def getSet(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is set, SerializationTag.error[4]
-        return set(self.dict[key])
+        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
+        assert self.dict[key].keyExists['DATATYPE'] and self.dict[key].getData['DATATYPE'] == 'SET', SerializationTag.error[4]
+        return set(self.dict[key].getData['VALUES'])
 
     def getTuple(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -127,7 +137,7 @@ class SerializationTag:
             del self.dict[key]
 
     '''
-    '   getKeys
+    'getKeys
     'Get a list of keys that are registered with the tag_name.
     'Can be used for traversing a tag with unknown named keys.
     '''

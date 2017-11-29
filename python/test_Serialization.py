@@ -53,4 +53,8 @@ tag = createTagData(testValues)
 # Testing SerializationTag
 #################################
 printTagData(tag)
-print(json_io.encodeJSON(tag))
+print('JSON:')
+JSONDATA = json_io.encodeJSON(tag)
+print(JSONDATA)
+print("DECODE:")
+printTagData(json_io.decodeJSON(JSONDATA))
