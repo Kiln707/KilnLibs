@@ -40,7 +40,7 @@ class SerializationTag:
             self.dict[key] = SerializationTag(t)
         else:
             self.dict[key] = value
-        return value
+        return self
 
     '''
     getData, the main idea. Replaced with methods that should be used. getbool, etc.

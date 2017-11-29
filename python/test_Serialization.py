@@ -1,6 +1,8 @@
 from Serialization import SerializationTag
 from Serialization import json_io
 
+values = {}
+
 def printTagData(tag):
     assert isinstance(tag, SerializationTag), "Tag needs to be of instance SerializationTag"
     print(tag.getKeys())
@@ -11,6 +13,7 @@ def printTagData(tag):
             printTagData(val)
             print("---------------END TAG--------------------")
 
+<<<<<<< Updated upstream
 def createTagData(values):
     tag = SerializationTag()
     print(values)
@@ -29,6 +32,28 @@ def createTagData(values):
     return tag
 
 
+=======
+def primeTag(tagDict):
+
+
+###############
+#Test Values:
+###############
+bool1 = True
+bool2 = False
+byte = bytes(35)
+char = chr(65)
+comp = complex(976418)
+flt = 354.264
+integer = int(689)
+string = "This is a value"
+dic = {'Yoho': "A bottle of rum", "sumval": 45}
+st = {1,2,3,4,5}
+fst = frozenset(st)
+tup = (1,2,3,4,5)
+lst = [1,2,3,4,5,6,7,8,9,0]
+
+>>>>>>> Stashed changes
 ###############
 #Test Values:
 ###############
