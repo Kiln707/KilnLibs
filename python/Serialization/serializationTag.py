@@ -1,4 +1,4 @@
-import json
+import codecs, base64, json
 
 class SerializationTag:
     error=("Argument for key is already in use. key=",
@@ -28,12 +28,12 @@ class SerializationTag:
         assert type(value) in allowedValues, SerializationTag.error[2]
         assert not self.keyExists(key), SerializationTag.error[0]+key
         if type(value) is bytes:
-            self.dict[key] = value.decode('utf-8')
+            self.dict[key] = codecs.encode(value, 'base64').decode('utf-8')
         elif type(value) is dict and 'DATATYPE' in value:
-                self.dict[key] = SerializationTag(value)
+            self.dict[key] = SerializationTag(value)
         elif type(value) is complex:
             t = {'DATATYPE':'COMPLEX', 'REAL':int(value.real), 'IMAG':int(value.imag)}
-            self.dict[key] = SerializationTag(t)
+            self.dict[key] = SerializationTagt)
         elif type(value) is set:
             t = {'DATATYPE':'SET', 'VALUES':list(value)}
             self.dict[key] = SerializationTag(t)
@@ -61,7 +61,7 @@ class SerializationTag:
 
     def getBytes(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        return bytes(self.dict[key].encode('utf-8'))
+        return codecs.decode(self.dict[key].encode('utf-8'), 'base64')
 
     def getChr(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key

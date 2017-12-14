@@ -31,3 +31,5 @@
 .project
 .cproject
 Debug
+
+__pycache__/
