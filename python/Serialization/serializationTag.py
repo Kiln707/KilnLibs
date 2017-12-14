@@ -164,32 +164,10 @@ class SerializationTag:
     JSONerror=("Argument Tag must be instance of SerializationTag",
             "Argument json must be a string value.")
 
-    class SerializationTagEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj, SerializationTag):
-                return obj._getDict()
-            return json.JSONEncoder.default(self, obj)
-
-    class SerializationTagDecoder(json.JSONDecoder):
-        def decodeSerializationTag(value):
-            assert type(value) is dict, "Invalid argument type. Needs to be type dict."
-            if 'DATATYPE' not in value:
-                return value
-            for key, val in value.items():
-                if type(val) is dict:
-                    value[key]=SerializationTag.SerializationTagDecoder.decodeSerializationTag(val)
-            return SerializationTag(value)
-
-        def decode(self, obj):
-            data = json.JSONDecoder.decode(self, obj)
-            if type(data) is dict:
-                return SerializationTag.SerializationTagDecoder.decodeSerializationTag(data)
-            return data
-
     def encodeJSON(tag):
         assert isinstance(tag, SerializationTag), JSONerror[0]
-        return json.dumps(tag._getDict(),indent=4)# ,cls=SerializationTag.SerializationTagEncoder, indent=4 )
+        return json.dumps(tag._getDict(),indent=4)
 
     def decodeJSON(jsonDATA):
         assert type(jsonDATA) is str, JSONerror[1]
-        return SerializationTag(json.loads(jsonDATA, cls=SerializationTag.SerializationTagDecoder))
+        return SerializationTag(json.loads(jsonDATA))
