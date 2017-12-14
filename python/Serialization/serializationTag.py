@@ -1,9 +1,11 @@
+import json
+
 class SerializationTag:
     error=("Argument for key is already in use. key=",
-    "Argument tag must be None or an instance of SerializationTag",
+    "Argument tag must be an instance of SerializationTag, Dict, or None",
     "Value for argument value must be one of the following types: bool, bytes, chr, complex, float, int, str, dict, frozenset, set, tuple, list, SerializationTag",
     "Key does not exist. key=",
-    "Stored value is of incorrect type."
+    "Stored value is of incorrect type. Stored value is of Type:"
     )
     #Constructor for new SerializationTag serialization
     def __init__(self,tag=None):
@@ -14,8 +16,8 @@ class SerializationTag:
             if not ( 'DATATYPE' in tag ):
                 tag['DATATYPE'] = 'SERIALIZATIONTAG'
             self.dict = dict(tag)
-        else:   #Creating a copy of SerializationTag
-            self.dict = tag.getDict()
+        elif isinstance(tag, SerializationTag):   #Creating a copy of SerializationTag
+            self.dict = dict(tag._getDict())
 
     '''
     'Insert data with key
@@ -30,13 +32,16 @@ class SerializationTag:
         elif type(value) is dict and 'DATATYPE' in value:
                 self.dict[key] = SerializationTag(value)
         elif type(value) is complex:
-            t = {'DATATYPE':'COMPLEX', 'REAL':value.real, 'IMAG':value.imag}
+            t = {'DATATYPE':'COMPLEX', 'REAL':int(value.real), 'IMAG':int(value.imag)}
             self.dict[key] = SerializationTag(t)
         elif type(value) is set:
             t = {'DATATYPE':'SET', 'VALUES':list(value)}
             self.dict[key] = SerializationTag(t)
         elif type(value) is frozenset:
             t = {'DATATYPE':'FROZENSET', 'VALUES':list(value)}
+            self.dict[key] = SerializationTag(t)
+        elif type(value) is tuple:
+            t = {'DATATYPE':'TUPLE', 'VALUES':list(value)}
             self.dict[key] = SerializationTag(t)
         else:
             self.dict[key] = value
@@ -51,23 +56,23 @@ class SerializationTag:
 
     def getBool(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is bool, SerializationTag.error[4]
+        assert type(self.dict[key]) is bool, SerializationTag.error[4]+type(self.dict[key])
         return bool(self.dict[key])
 
     def getBytes(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        return self.dict[key].encode('utf-8')
+        return bytes(self.dict[key].encode('utf-8'))
 
     def getChr(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is chr, SerializationTag.error[4]
-        return chr(self.dict[key])
+        assert type(self.dict[key]) is str and len(self.dict[key]) == 1, SerializationTag.error[4]+str(type(self.dict[key]))
+        return chr(ord(self.dict[key]))
 
     def getComplex(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
         assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists['DATATYPE'] and self.dict[key].getData['DATATYPE'] == 'COMPLEX', SerializationTag.error[4]
-        return complex(self.dict[key].getData['REAL'],self.dict[key].getData['IMAG'])
+        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'COMPLEX', SerializationTag.error[4]
+        return complex(self.dict[key].getInt('REAL'),self.dict[key].getInt('IMAG'))
 
     def getFloat(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -92,19 +97,20 @@ class SerializationTag:
     def getFrozenset(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
         assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists['DATATYPE'] and self.dict[key].getData['DATATYPE'] == 'FROZENSET', SerializationTag.error[4]
-        return frozenset(self.dict[key].getData['VALUES'])
+        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'FROZENSET', SerializationTag.error[4]
+        return frozenset(self.dict[key].getList('VALUES'))
 
     def getSet(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
         assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists['DATATYPE'] and self.dict[key].getData['DATATYPE'] == 'SET', SerializationTag.error[4]
-        return set(self.dict[key].getData['VALUES'])
+        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'SET', SerializationTag.error[4]
+        return set(self.dict[key].getList('VALUES'))
 
     def getTuple(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert type(self.dict[key]) is tuple, SerializationTag.error[4]
-        return tuple(self.dict[key])
+        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
+        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'TUPLE', SerializationTag.error[4]
+        return tuple(self.dict[key].getList('VALUES'))
 
     def getList(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -137,9 +143,9 @@ class SerializationTag:
             del self.dict[key]
 
     '''
-    'getKeys
-    'Get a list of keys that are registered with the tag_name.
-    'Can be used for traversing a tag with unknown named keys.
+    ' getKeys
+    ' Get a list of keys that are registered with the tag_name.
+    ' Can be used for traversing a tag with unknown named keys.
     '''
     def getKeys(self):
         return self.dict.keys()
@@ -150,9 +156,42 @@ class SerializationTag:
         return False
 
     '''
-    '   __getDict:
+    ' getDict:
     ' Get the dictionary of the tag, used to make a copy of Tag
     ' Should not be used normally
     '''
-    def getDict(self):
+    def _getDict(self):
         return dict(self.dict) #Return a copy of the dictionary
+
+    JSONerror=("Argument Tag must be instance of SerializationTag",
+            "Argument json must be a string value.")
+
+    class SerializationTagEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, SerializationTag):
+                return obj._getDict()
+            return json.JSONEncoder.default(self, obj)
+
+    class SerializationTagDecoder(json.JSONDecoder):
+        def decodeSerializationTag(value):
+            assert type(value) is dict, "Invalid argument type. Needs to be type dict."
+            if 'DATATYPE' not in value:
+                return value
+            for key, val in value.items():
+                if type(val) is dict:
+                    value[key]=SerializationTag.SerializationTagDecoder.decodeSerializationTag(val)
+            return SerializationTag(value)
+
+        def decode(self, obj):
+            data = json.JSONDecoder.decode(self, obj)
+            if type(data) is dict:
+                return SerializationTag.SerializationTagDecoder.decodeSerializationTag(data)
+            return data
+
+    def encodeJSON(tag):
+        assert isinstance(tag, SerializationTag), JSONerror[0]
+        return json.dumps(tag ,cls=SerializationTag.SerializationTagEncoder, indent=4 )
+
+    def decodeJSON(jsonDATA):
+        assert type(jsonDATA) is str, JSONerror[1]
+        return SerializationTag(json.loads(jsonDATA, cls=SerializationTag.SerializationTagDecoder))
