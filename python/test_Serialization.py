@@ -161,17 +161,3 @@ if validTag(SerializationTag.decodeJSON(JSONDATA)):
 else:
     print("Tag failed to validate after encoding/decoding through JSON!")
     sys.exit(1)
-
-#Build Pickle, Verify Pickle is valid, ensure Data survives and is not changed after serialization/deserialization
-PICKLEDATA = SerializationTag.encodePickle(tag)
-try:
-    pickle.loads(PICKLEDATA)
-    print("Tag convertion to Pickle byte format validated successfully!")
-except ValueError:
-    print("Tag convertion to Pickle byte format failed to validate!")
-
-if validTag(SerializationTag.decodePickle(PICKLEDATA)):
-    print("Tag validated successfully after encoding/decoding through Pickle!")
-else:
-    print("Tag failed to validate after encoding/decoding through Pickle!")
-    sys.exit(1)
