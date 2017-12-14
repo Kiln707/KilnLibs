@@ -1,5 +1,5 @@
 from Serialization import SerializationTag
-import sys, json
+import sys, json, pickle
 ###############
 #Test Values:
 ###############
@@ -140,12 +140,15 @@ def printTagData(tag):
 #################################
 # Testing SerializationTag
 #################################
+#Build tag, verify that data added is not changed after addition
 tag = buildTag()
 if validTag(tag):
     print("Tag validated successfully against itself!")
 else:
     print("Tag failed to validate against itself!")
     sys.exit(1)
+
+#Build JSON, Verify JSON is valid, ensure Data survives and is not changed after serialization/deserialization
 JSONDATA = SerializationTag.encodeJSON(tag)
 try:
     json.loads(JSONDATA)
@@ -157,4 +160,18 @@ if validTag(SerializationTag.decodeJSON(JSONDATA)):
     print("Tag validated successfully after encoding/decoding through JSON!")
 else:
     print("Tag failed to validate after encoding/decoding through JSON!")
+    sys.exit(1)
+
+#Build Pickle, Verify Pickle is valid, ensure Data survives and is not changed after serialization/deserialization
+PICKLEDATA = SerializationTag.encodePickle(tag)
+try:
+    pickle.loads(PICKLEDATA)
+    print("Tag convertion to Pickle byte format validated successfully!")
+except ValueError:
+    print("Tag convertion to Pickle byte format failed to validate!")
+
+if validTag(SerializationTag.decodePickle(PICKLEDATA)):
+    print("Tag validated successfully after encoding/decoding through Pickle!")
+else:
+    print("Tag failed to validate after encoding/decoding through Pickle!")
     sys.exit(1)

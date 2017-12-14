@@ -1,4 +1,4 @@
-import codecs, base64, json
+import codecs, json, pickle
 
 class SerializationTag:
     error=("Argument for key is already in use. key=",
@@ -160,14 +160,31 @@ class SerializationTag:
     '''
     def _getDict(self):
         return dict(self.dict) #Return a copy of the dictionary
+    '''
+    Serialization Section
+    '''
+    serialError=("Argument Tag must be instance of SerializationTag.",
+            "Argument json must be a string value.",
+            "Argument byteData must be a bytes value.")
 
-    JSONerror=("Argument Tag must be instance of SerializationTag",
-            "Argument json must be a string value.")
-
-    def encodeJSON(tag):
-        assert isinstance(tag, SerializationTag), JSONerror[0]
-        return json.dumps(tag._getDict(),indent=4)
+    '''
+    JSON SECTION
+    '''
+    def encodeJSON(tag, jsonindent=0):
+        assert isinstance(tag, SerializationTag), serialError[0]
+        return json.dumps(tag._getDict(),indent=jsonindent)
 
     def decodeJSON(jsonDATA):
-        assert type(jsonDATA) is str, JSONerror[1]
+        assert type(jsonDATA) is str, serialError[1]
         return SerializationTag(json.loads(jsonDATA))
+
+    '''
+    PICKLE SECTION
+    '''
+    def encodePickle(tag):
+        assert isinstance(tag, SerializationTag), serialError[0]
+        return pickle.dumps(tag._getDict(), protocol=pickle.DEFAULT_PROTOCOL)
+
+    def decodePickle(byteData):
+        assert type(byteData) is bytes, serialError[2]
+        return SerializationTag(pickle.loads(byteData))
