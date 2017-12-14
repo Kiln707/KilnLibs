@@ -140,8 +140,6 @@ def printTagData(tag):
 #################################
 # Testing SerializationTag
 #################################
-
-print(type( testValues["byte"]), testValues["byte"])
 tag = buildTag()
 if validTag(tag):
     print("Tag validated successfully against itself!")
@@ -151,7 +149,6 @@ else:
 JSONDATA = SerializationTag.encodeJSON(tag)
 try:
     json.loads(JSONDATA)
-    print(JSONDATA)
     print("Tag convertion to JSON validated successfully!")
 except ValueError:
     print("Tag convertion to JSON failed to validate!")

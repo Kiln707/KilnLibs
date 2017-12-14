@@ -11,10 +11,8 @@ class SerializationTag:
     def __init__(self,tag=None):
         assert isinstance(tag, SerializationTag) or type(tag) is dict or tag is None, SerializationTag.error[1]
         if tag is None: #Creating a new instance of SerializationTag
-            self.dict = {'DATATYPE':'SerializationTag'}
+            self.dict = {}
         elif type(tag) is dict:
-            if not ( 'DATATYPE' in tag ):
-                tag['DATATYPE'] = 'SERIALIZATIONTAG'
             self.dict = dict(tag)
         elif isinstance(tag, SerializationTag):   #Creating a copy of SerializationTag
             self.dict = dict(tag._getDict())
@@ -29,20 +27,20 @@ class SerializationTag:
         assert not self.keyExists(key), SerializationTag.error[0]+key
         if type(value) is bytes:
             self.dict[key] = codecs.encode(value, 'base64').decode('utf-8')
-        elif type(value) is dict and 'DATATYPE' in value:
-            self.dict[key] = SerializationTag(value)
         elif type(value) is complex:
             t = {'DATATYPE':'COMPLEX', 'REAL':int(value.real), 'IMAG':int(value.imag)}
-            self.dict[key] = SerializationTagt)
+            self.addData(key, t)
         elif type(value) is set:
             t = {'DATATYPE':'SET', 'VALUES':list(value)}
-            self.dict[key] = SerializationTag(t)
+            self.addData(key, t)
         elif type(value) is frozenset:
             t = {'DATATYPE':'FROZENSET', 'VALUES':list(value)}
-            self.dict[key] = SerializationTag(t)
+            self.addData(key, t)
         elif type(value) is tuple:
             t = {'DATATYPE':'TUPLE', 'VALUES':list(value)}
-            self.dict[key] = SerializationTag(t)
+            self.addData(key, t)
+        elif isinstance(value, SerializationTag):
+            self.addData(key, value._getDict())
         else:
             self.dict[key] = value
         return self
@@ -70,9 +68,9 @@ class SerializationTag:
 
     def getComplex(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'COMPLEX', SerializationTag.error[4]
-        return complex(self.dict[key].getInt('REAL'),self.dict[key].getInt('IMAG'))
+        assert type(self.dict[key]) is dict, SerializationTag.error[4]
+        assert 'DATATYPE' in self.dict[key] and self.dict[key]['DATATYPE'] == 'COMPLEX', SerializationTag.error[4]
+        return complex(self.dict[key]['REAL'],self.dict[key]['IMAG'])
 
     def getFloat(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -96,21 +94,21 @@ class SerializationTag:
 
     def getFrozenset(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'FROZENSET', SerializationTag.error[4]
-        return frozenset(self.dict[key].getList('VALUES'))
+        assert type(self.dict[key]) is dict, SerializationTag.error[4]
+        assert 'DATATYPE' in self.dict[key] and self.dict[key]['DATATYPE'] == 'FROZENSET', SerializationTag.error[4]
+        return frozenset(self.dict[key]['VALUES'])
 
     def getSet(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'SET', SerializationTag.error[4]
-        return set(self.dict[key].getList('VALUES'))
+        assert type(self.dict[key]) is dict, SerializationTag.error[4]
+        assert 'DATATYPE' in self.dict[key] and self.dict[key]['DATATYPE'] == 'SET', SerializationTag.error[4]
+        return set(self.dict[key]['VALUES'])
 
     def getTuple(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        assert self.dict[key].keyExists('DATATYPE') and self.dict[key]._getDict()['DATATYPE'] == 'TUPLE', SerializationTag.error[4]
-        return tuple(self.dict[key].getList('VALUES'))
+        assert type(self.dict[key]) is dict, SerializationTag.error[4]
+        assert 'DATATYPE' in self.dict[key] and self.dict[key]['DATATYPE'] == 'TUPLE', SerializationTag.error[4]
+        return tuple(self.dict[key]['VALUES'])
 
     def getList(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -119,8 +117,8 @@ class SerializationTag:
 
     def getSerializationTag(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
-        assert isinstance(self.dict[key], SerializationTag), SerializationTag.error[4]
-        return SerializationTag(self.dict[key])
+        assert type(self.dict[key]) is dict, SerializationTag.error[4]
+        return SerializationTag(self.getDict(key))
 
     '''
     removeData
@@ -190,7 +188,7 @@ class SerializationTag:
 
     def encodeJSON(tag):
         assert isinstance(tag, SerializationTag), JSONerror[0]
-        return json.dumps(tag ,cls=SerializationTag.SerializationTagEncoder, indent=4 )
+        return json.dumps(tag._getDict(),indent=4)# ,cls=SerializationTag.SerializationTagEncoder, indent=4 )
 
     def decodeJSON(jsonDATA):
         assert type(jsonDATA) is str, JSONerror[1]
