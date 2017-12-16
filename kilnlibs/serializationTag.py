@@ -1,5 +1,6 @@
 import codecs, json, pickle
 
+
 class SerializationTag:
     error=("Argument for key is already in use. key=",
     "Argument tag must be an instance of SerializationTag, Dict, or None",
@@ -17,41 +18,39 @@ class SerializationTag:
         elif isinstance(tag, SerializationTag):   #Creating a copy of SerializationTag
             self.dict = dict(tag._getDict())
 
-    '''
-    'Insert data with key
-    ' TODO: Change to addType, maybe
-    '''
+    ####################################
+    # Insert data with key
+    # This section handles converting the
+    # data into usable structures.
+    ###################################
     def addData(self, key, value):
-        allowedValues = (bool, bytes, chr, complex, float, int, str, dict, frozenset, set, tuple, list, SerializationTag)
-        assert type(value) in allowedValues, SerializationTag.error[2]
+        convertionTypes = (bytes, complex, set, frozenset, tuple)
+        assert type(value) in (bool, chr, float, int, str, dict, list)+convertionTypes or isinstance(value, SerializationTag), SerializationTag.error[2]
         assert not self.keyExists(key), SerializationTag.error[0]+key
-        if type(value) is bytes:
-            self.dict[key] = codecs.encode(value, 'base64').decode('utf-8')
-        elif type(value) is complex:
-            t = {'DATATYPE':'COMPLEX', 'REAL':int(value.real), 'IMAG':int(value.imag)}
-            self.addData(key, t)
-        elif type(value) is set:
-            t = {'DATATYPE':'SET', 'VALUES':list(value)}
-            self.addData(key, t)
-        elif type(value) is frozenset:
-            t = {'DATATYPE':'FROZENSET', 'VALUES':list(value)}
-            self.addData(key, t)
-        elif type(value) is tuple:
-            t = {'DATATYPE':'TUPLE', 'VALUES':list(value)}
-            self.addData(key, t)
-        elif isinstance(value, SerializationTag):
-            self.addData(key, value._getDict())
+        if type(value) in convertionTypes or isinstance(value, SerializationTag):
+            if type(value) is bytes:
+                self.dict[key] = codecs.encode(value, 'base64').decode('utf-8')
+            elif type(value) is complex:
+                t = {'DATATYPE':'COMPLEX', 'REAL':int(value.real), 'IMAG':int(value.imag)}
+                self.addData(key, t)
+            elif type(value) is set:
+                t = {'DATATYPE':'SET', 'VALUES':list(value)}
+                self.addData(key, t)
+            elif type(value) is frozenset:
+                t = {'DATATYPE':'FROZENSET', 'VALUES':list(value)}
+                self.addData(key, t)
+            elif type(value) is tuple:
+                t = {'DATATYPE':'TUPLE', 'VALUES':list(value)}
+                self.addData(key, t)
+            elif isinstance(value, SerializationTag):
+                self.addData(key, value._getDict())
         else:
             self.dict[key] = value
         return self
 
-    '''
-    getData, the main idea. Replaced with methods that should be used. getbool, etc.
-    def getData(self, key):
-        assert self.keyExists(key), SerializationTag.error[3]+key
-        return self.dict[key]
-    '''
-
+    ###################################
+    #
+    ###################################
     def getBool(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
         assert type(self.dict[key]) is bool, SerializationTag.error[4]+type(self.dict[key])
