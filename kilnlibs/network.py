@@ -5,10 +5,14 @@ class NetworkHandler:
 
     def __init__(self, socketFamily=socket.AF_INET, socketType=socket.SOCK_STREAM, socketProtocol=o, socketFileno=None):
         self.socket = socket.socket(family=socketFamily, type=socketType, proto=socketProtocol, fileno=socketFileno)
+        self.netsocket=None
+
+    def __del__(self):
+        self.netsocket.close()
 
     def sendNetworkData(self, connection, tag):
         if isinstance(tag, Tag):
-            connection.sendall(struct.pack('>i', len(data))+SerializationTag.encodePickle(tag))
+            self.netsocket.sendall(struct.pack('>i', len(data))+SerializationTag.encodePickle(tag))
         else:
             raise TypeError('Value tag, needs to be of Tag object.')
 
@@ -17,7 +21,7 @@ class NetworkHandler:
         total_len=0;total_data=bytearray();size=sys.maxsize
         sock_data=bytearray();recv_size=8192
         while total_len<size:
-            sock_data=connection.recv(recv_size)
+            sock_data=self.netsocket.recv(recv_size)
             if not sock_data:
                 return None
             if not total_data:
@@ -33,15 +37,20 @@ class NetworkHandler:
         return SerializationTag.decodePickle(bytes(total_data))
 
 class NetworkClient(NetworkHandler):
-    def __init__
+    def __init__(self, address='127.0.0.1', port='65432', socketFamily=socket.AF_INET, socketType=socket.SOCK_STREAM, socketProtocol=o, socketFileno=None):
+        NetworkHandler.__init__(socketFamily, socketType, socketProtocol, socketFileno)
+        self.connect(address, port)
+
+    def connect(address, port):
+        self.netsocket = self.socket.connect( (address, port) )
+
 
 class NetworkServer(NetworkHandler):
     def __init__(self,address, port, connections=5, socketFamily=socket.AF_INET, socketType=socket.SOCK_STREAM, socketProtocol=o, socketFileno=None):
         NetworkHandler.__init__(socketFamily, socketType,  socketProtocol, socketFileno)
-        self.netsocket = initializeNetworkServer(address, port)
-
-    def __del__(self):
-        self.netsocket.close()
+        self.initializeNetworkServer(address, port)
+        self.readlist = []
+        self.writelist = []
 
     def initializeNetworkServer(address, port, connections=5):
         print("Creating Network server listening on "+address+":"port)
@@ -52,6 +61,9 @@ class NetworkServer(NetworkHandler):
                 print("Network server creation complete.")
             except socket.error as msg:
                 print("Failed to bind to"+address+":"+port,"Error Code:", str(msg[0]), 'Message:',msg[1])
+                self.netsocket=None
         else:
             print('Failed to initialize network server. Bad address, port')
-        self.netsocket = None
+            self.netsocket = None
+
+    def get
