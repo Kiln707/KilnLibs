@@ -1,5 +1,5 @@
 from .serializationTag import SerializationTag
-import sys, struct, select
+import sys, struct, select, types, signature, threading
 
 class NetworkHandler:
 
@@ -69,10 +69,13 @@ class NetworkServer(NetworkHandler):
 
     def acceptIncomingConnections():
         readable, writable, errored = select.select([self.socket], [],[], 0.5)
+        newConnections=[]
         for s in readable:
             connection, address = self.socket.accept()
             self.readlist.append(connection)
             self.connections[connection] = address
+            newConnections.append( (connection, address) )
+        return newConnections
 
     def receiveData():
         returndata = []
