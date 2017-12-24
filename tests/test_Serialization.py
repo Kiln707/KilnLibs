@@ -1,5 +1,8 @@
-from Serialization import SerializationTag
-import sys, json, pickle
+import sys, os, json, pickle
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'kilnlibs'))
+from serializationTag import SerializationTag
+
 ###############
 #Test Values:
 ###############
