@@ -18,11 +18,13 @@ class SerializationTag:
         elif isinstance(tag, SerializationTag):   #Creating a copy of SerializationTag
             self.dict = dict(tag._getDict())
 
-    ####################################
+    ########################################
     # Insert data with key
     # This section handles converting the
     # data into usable structures.
-    ###################################
+    # This method returns itself to chain
+    # adding data.
+    ########################################
     def addData(self, key, value):
         convertionTypes = (bytes, complex, set, frozenset, tuple)
         assert type(value) in (bool, chr, float, int, str, dict, list)+convertionTypes or isinstance(value, SerializationTag), SerializationTag.error[2]
@@ -49,7 +51,10 @@ class SerializationTag:
         return self
 
     ###################################
-    #
+    # Return Functions.
+    # Requires the key for the value
+    # and ensures that the value returned
+    # is of the correct type
     ###################################
     def getBool(self, key):
         assert self.keyExists(key), SerializationTag.error[3]+key
@@ -119,14 +124,14 @@ class SerializationTag:
         assert type(self.dict[key]) is dict, SerializationTag.error[4]
         return SerializationTag(self.getDict(key))
 
-    '''
-    removeData
-    Used to remove data by name from tag.
-    Data is not returned upon removal.
-    Setting parameter reportSuccess to True will return if data was removed
-    from the given key.
-    Setting parameter keyCheck with raise an exception if key doesnt exist.
-    '''
+    ###########################################################################
+    # removeData
+    # Used to remove data by name from tag.
+    # Data is not returned upon removal.
+    # Setting parameter reportSuccess to True will return if data was removed
+    # from the given key.
+    # Setting parameter keyCheck with raise an exception if key doesnt exist.
+    ###########################################################################
     def removeData(self, key, reportSuccess=False, keyCheck=False):
         if keyCheck:
             assert self.keyExists(key), SerializationTag.error[0]+tag_name
@@ -139,11 +144,11 @@ class SerializationTag:
         else:
             del self.dict[key]
 
-    '''
-    ' getKeys
-    ' Get a list of keys that are registered with the tag_name.
-    ' Can be used for traversing a tag with unknown named keys.
-    '''
+    #############################################################
+    # getKeys
+    # Get a list of keys that are registered with the tag_name.
+    # Can be used for traversing a tag with unknown named keys.
+    #############################################################
     def getKeys(self):
         return self.dict.keys()
 
@@ -152,23 +157,23 @@ class SerializationTag:
             return True
         return False
 
-    '''
-    ' getDict:
-    ' Get the dictionary of the tag, used to make a copy of Tag
-    ' Should not be used normally
-    '''
+    #################################################################
+    # getDict:
+    # Get the dictionary of the tag, used to make a copy of Tag
+    # Should not be used normally
+    ################################################################
     def _getDict(self):
         return dict(self.dict) #Return a copy of the dictionary
-    '''
-    Serialization Section
-    '''
+    #####################################################################################
+    #Serialization Section
+    #####################################################################################
     serialError=("Argument Tag must be instance of SerializationTag.",
             "Argument json must be a string value.",
             "Argument byteData must be a bytes value.")
 
-    '''
-    JSON SECTION
-    '''
+    ##############
+    #JSON SECTION
+    ##############
     def encodeJSON(tag, jsonindent=0):
         assert isinstance(tag, SerializationTag), serialError[0]
         return json.dumps(tag._getDict(),indent=jsonindent)
@@ -177,9 +182,9 @@ class SerializationTag:
         assert type(jsonDATA) is str, serialError[1]
         return SerializationTag(json.loads(jsonDATA))
 
-    '''
-    PICKLE SECTION
-    '''
+    #################
+    #PICKLE SECTION
+    ################
     def encodePickle(tag):
         assert isinstance(tag, SerializationTag), serialError[0]
         return pickle.dumps(tag._getDict(), protocol=pickle.DEFAULT_PROTOCOL)
@@ -187,3 +192,37 @@ class SerializationTag:
     def decodePickle(byteData):
         assert type(byteData) is bytes, serialError[2]
         return SerializationTag(pickle.loads(byteData))
+
+    #######################################################################
+    # IMPORT/EXPORT FILE Section
+    #######################################################################
+
+    #Configuration file section
+    def parseConfig(config):
+        config={}
+        subconfigkey=''
+        subtext=''
+        subconfig=False
+        for line in config.splitlines():
+            if line.startswith('[') or line.endswith(']\n'):
+                if subconfig:
+                    config[subconfigkey]=parseConfig(subtext)
+                    subconfigkey=''
+                    subconfig=False
+                    subtext=''
+                subconfigkey=line.strip('[]').trim()
+                subconfig=True
+            elif subconfig:
+                subtext+=line
+            else:
+                delimiter=line.find('=')
+                
+
+
+    def toConfigFile(tag, configfile):
+        pass
+
+
+    def fromConfigFile(file):
+        with open(configfile) as f:
+            return parseConfig(f.read())
